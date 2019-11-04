@@ -12,9 +12,13 @@ experiment and the associated parameters for the estimator
 '''
 
 from sklearn.model_selection import cross_val_score
-
+from statistics import mean, stdev
 
 def run_experiment(estimator, params, input_data, target_data) :
+
+    scores = cross_val_score(estimator, input_data , target_data, cv= 20)
+    return (params, mean(scores), stdev(scores, mean(scores)))
+
     '''
     This function is supposed to run a cross validation experiment with the given estimator
     and the given input and target dataset.
@@ -32,4 +36,3 @@ def run_experiment(estimator, params, input_data, target_data) :
         given in the function call. You should return a tuple of (params, mean_score, std_score)
     '''
 
-    raise NotImplementedError

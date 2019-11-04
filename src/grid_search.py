@@ -10,11 +10,10 @@ combinations of parameters to run different models.
 You need to use the parallelizer in the fit function of this class. The worker function
 itself should run 20 fold cross validation. That means that you are running 20 trials.
 '''
-import itertools
-from copy import deepcopy
-
-from .parallelizer import Parallelizer
-from .worker import run_experiment
+import itertools as it
+from src import parallelizer
+from src import worker
+import copy
 
 
 class GridSearchCV:
@@ -36,6 +35,21 @@ class GridSearchCV:
         self.tuned_parameters = tuned_parameters
 
     def fit(self, inputs, targets):
+
+        perms = self.generate_all_permutations(self.tuned_parameters)
+        pList = []
+
+        for dict in perms:
+            est = copy.deepcopy(self.estimator)
+            est.__init__(**dict)
+            #print(est)
+            pList.append((est, dict, inputs, targets))
+
+        p= parallelizer.Parallelizer(worker.run_experiment)
+
+        self.cv_results = p.parallelize(pList)
+
+
         '''
         This function should create all possible mutations of the parameter specification and
         run all the different experiments in parallel. Finally, the variable self.cv_results
@@ -64,9 +78,14 @@ class GridSearchCV:
         :param targets: The targets/classes for the given input data
         '''
 
-        raise NotImplementedError
 
     def generate_all_permutations(self, tuned_parameters):
+        d = tuned_parameters
+        return [dict(zip(d, v)) for v in it.product(*d.values())]
+
+
+
+
         '''
         This function will return all possible permutations for a given dictionary of
         parameter_type (keys) and parameter_values (values). The list should finally look
@@ -83,5 +102,5 @@ class GridSearchCV:
             contain parameter_type and parameter_value pairs.
         '''
 
-        raise NotImplementedError
+
 

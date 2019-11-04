@@ -14,10 +14,9 @@ itself should run 20 fold cross validation. That means that you are running 20 t
 '''
 
 import random
-from copy import deepcopy
-
-from .parallelizer import Parallelizer
-from .worker import run_experiment
+import copy
+from src import parallelizer
+from src import worker
 
 
 class RandomSearchCV:
@@ -42,6 +41,26 @@ class RandomSearchCV:
         self.n_iter = n_iter
 
     def fit(self, inputs, targets):
+
+        perms = []
+        print(self.n_iter)
+        for i in range(self.n_iter):
+            dict= {}
+            for x in self.param_distributions:
+                dict[x] = random.choice(self.param_distributions.get(x))
+            perms.append(dict)
+
+        pList = []
+
+        for dict in perms:
+            est = copy.deepcopy(self.estimator)
+            est.__init__(**dict)
+            # print(est)
+            pList.append((est, dict, inputs, targets))
+
+        p = parallelizer.Parallelizer(worker.run_experiment)
+
+        self.cv_results = p.parallelize(pList)
         '''
         This function should create n_iter random mutations of the parameter specification and
         run all the different experiments in parallel. Finally, the variable self.cv_results
@@ -73,4 +92,3 @@ class RandomSearchCV:
         :param targets: The targets/classes for the given input data
         '''
 
-        raise NotImplementedError

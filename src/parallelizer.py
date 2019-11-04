@@ -37,7 +37,7 @@ class Parallelizer:
 
         # First we set the number of threads we want start
         # You can increase/decrease that number if you want
-        n_threads = 16
+        n_threads = 20
 
         # Secondly, we need a list to store the results
         results = []
